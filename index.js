@@ -30,15 +30,30 @@ async function go() {
   }
   await clearlyDefinedBuilder.read(new ClearlyDefinedSource(JSON.stringify(clearlydefinedInput)))
   const output = clearlyDefinedBuilder.build()
-  console.log(output)
 
+  // update notice file
+  await request
+  .put(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/contents/NOTICES`)
+  .auth(process.env.GITHUB_TOKEN, {
+    type: 'bearer'
+  })
+  .send({
+    "message": "update NOTICES",
+    "committer": {
+      "name": "dabutvin",
+      "email": "butvinik@outlook.com"
+    },
+    "content": Buffer.from(output).toString('base64')
+  })
+
+  // open PR
   await request
     .post(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/pulls`)
     .auth(process.env.GITHUB_TOKEN, {
       type: 'bearer'
     })
     .send({
-      "title": "Amazing new feature",
+      "title": "NOTICE file updates",
       "body": "Please pull this in!",
       "head": "notice",
       "base": "master"
