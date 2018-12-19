@@ -1,14 +1,9 @@
-workflow "Helllo" {
+workflow "Chive" {
   on = "push"
-  resolves = ["Hello World", "NPM package-lock.json"]
-}
-
-action "Hello World" {
-  uses = "./action-a"
-  args = "Actions!"
+  resolves = ["NPM package-lock.json"]
 }
 
 action "NPM package-lock.json" {
-  uses = "./npm"
+  uses = "./"
   args = "path"
 }
