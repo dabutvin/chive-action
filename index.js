@@ -33,18 +33,19 @@ async function go() {
 
   // update notice file
   await request
-  .put(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/contents/NOTICES`)
-  .auth(process.env.GITHUB_TOKEN, {
-    type: 'bearer'
-  })
-  .send({
-    "message": "update NOTICES",
-    "committer": {
-      "name": "dabutvin",
-      "email": "butvinik@outlook.com"
-    },
-    "content": Buffer.from(output).toString('base64')
-  })
+    .put(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/contents/NOTICES`)
+    .auth(process.env.GITHUB_TOKEN, {
+      type: 'bearer'
+    })
+    .send({
+      message: "update NOTICES",
+      committer: {
+        name: "dabutvin",
+        email: "butvinik@outlook.com"
+      },
+      content: Buffer.from(output).toString('base64'),
+      branch: 'notices'
+    })
 
   // open PR
   await request
@@ -53,10 +54,10 @@ async function go() {
       type: 'bearer'
     })
     .send({
-      "title": "NOTICE file updates",
-      "body": "Please pull this in!",
-      "head": "notice",
-      "base": "master"
+      title: "NOTICE file updates",
+      body: "Please pull this in!",
+      head: "notices",
+      base: "master"
     })
 }
 
