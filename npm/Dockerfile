@@ -9,5 +9,7 @@ LABEL "repository"="http://github.com/dabutvin/hello-action"
 LABEL "homepage"="http://github.com/dabutvin/hello-action"
 LABEL "maintainer"="dabutvin <butvinik@outlook.com>"
 
+RUN cd npm && npm install
+
 ADD entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
