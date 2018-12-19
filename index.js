@@ -15,6 +15,7 @@ const jsonRenderer = new JsonRenderer()
 const jsonBuilder = new DocBuilder(jsonRenderer)
 const clearlyDefinedBuilder = new DocBuilder(new TextRenderer())
 
+const noticesBranchName = 'notices'
 const packageData = fs.readFileSync(path.join(process.env.GITHUB_WORKSPACE, 'package-lock.json'))
 
 async function go() {
@@ -34,18 +35,13 @@ async function go() {
   const output = clearlyDefinedBuilder.build()
 
   // get a ref to the default branch
-  const master = await request
-    .get(
-      `https://api.github.com/repos/${
-        process.env.GITHUB_REPOSITORY
-      }/git/refs/heads/master`
-    )
-    .auth(process.env.GITHUB_TOKEN, {
-      type: 'bearer'
-    })
-    .send()
-
-  // todo: check if branch already exists and compare file output
+  const master = await getBranch('master')
+  const noticeBranch = await getBranch(noticesBranchName)
+  if (noticeBranch.body.ref == `refs/heads/${noticeBranch}`) {
+    // todo: see if this branch is out of date and rebase it
+    console.log('branch already exists')
+    return
+  }
 
   // create branch off master
   await request
@@ -78,7 +74,7 @@ async function go() {
         email: 'butvinik@outlook.com'
       },
       content: Buffer.from(output).toString('base64'),
-      branch: 'notices'
+      branch: noticesBranchName
     })
 
   // open PR notices -> master
@@ -90,9 +86,18 @@ async function go() {
     .send({
       title: 'NOTICE file updates',
       body: 'Please pull this in!',
-      head: 'notices',
+      head: noticesBranchName,
       base: 'master'
     })
 }
 
 go()
+
+
+function getBranch(branch) {
+  return request
+    .get(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/git/refs/heads/${branch}`)
+    .auth(process.env.GITHUB_TOKEN, {
+      type: 'bearer'
+    }).send()
+}
