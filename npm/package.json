@@ -1,0 +1,11 @@
+{
+  "name": "chive-action",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "dabutvin",
+  "license": "MIT",
+  "dependencies": {
+    "tiny-attribution-generator": "0.0.4"
+  }
+}
