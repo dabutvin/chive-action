@@ -33,5 +33,5 @@ jsonBuilder
   })
   .then(() => {
     const output = clearlyDefinedBuilder.build();
-    console.log(output);
+    fs.writeFileSync('NOTICES', output)
   });

@@ -14,6 +14,6 @@ workflow "NOTICE file generate" {
 }
 
 action "Chive Action" {
-  uses = "./"
+  uses = "dabutvin/chive-action@master"
 }
 ```
