@@ -5,4 +5,5 @@ workflow "NOTICE file generate" {
 
 action "Chive Action" {
   uses = "./"
+  secrets = ["GITHUB_TOKEN"]
 }
