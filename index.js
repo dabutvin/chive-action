@@ -16,7 +16,9 @@ const jsonBuilder = new DocBuilder(jsonRenderer)
 const clearlyDefinedBuilder = new DocBuilder(new TextRenderer())
 
 const noticesBranchName = 'notices'
-const packageData = fs.readFileSync(path.join(process.env.GITHUB_WORKSPACE, 'package-lock.json'))
+const packageData = fs.readFileSync(
+  path.join(process.env.GITHUB_WORKSPACE, 'package-lock.json')
+)
 
 async function go() {
   const packageLockSource = new PackageLockSource(packageData.toString())
@@ -24,27 +26,66 @@ async function go() {
   const jsonOutput = await jsonBuilder.build()
   const clearlydefinedInput = {
     coordinates: jsonOutput.packages.map(x =>
-      x.name.indexOf('/') > -1 ?
-      `npm/npmjs/${x.name}/${x.version}` :
-      `npm/npmjs/-/${x.name}/${x.version}`
+      x.name.indexOf('/') > -1
+        ? `npm/npmjs/${x.name}/${x.version}`
+        : `npm/npmjs/-/${x.name}/${x.version}`
     )
   }
   await clearlyDefinedBuilder.read(
     new ClearlyDefinedSource(JSON.stringify(clearlydefinedInput))
   )
   const output = clearlyDefinedBuilder.build()
+  const base64Output = Buffer.from(output).toString('base64')
 
   // get a ref to the default branch
   const master = await getBranch('master')
   const noticeBranch = await getBranch(noticesBranchName)
   if (noticeBranch.body.ref == `refs/heads/${noticesBranchName}`) {
-    // todo: see if this branch is out of date and rebase it
+    // todo: see if this branch is out of date and rebase it instead of quitting
     console.log('branch already exists')
     return
   }
 
   // create branch off master
-  await request
+  await createBranch(noticesBranchName, master.body.object.sha)
+
+  // get the notice file
+  const existingFile = await getFile('NOTICES', 'master')
+  if (existingFile.body.content == base64Output) {
+    console.log('No change to existing NOTICES file')
+    return
+  }
+
+  // todo: update vs create may be different endpoints
+  // update notice file in the notices branch
+  await writeFile(
+    'NOTICES',
+    base64Output,
+    noticesBranchName,
+    existingFile.body.sha
+  )
+
+  // open PR notices -> master
+  await openPr(noticesBranchName, 'master')
+}
+
+go()
+
+function getBranch(branch) {
+  return request
+    .get(
+      `https://api.github.com/repos/${
+        process.env.GITHUB_REPOSITORY
+      }/git/refs/heads/${branch}`
+    )
+    .auth(process.env.GITHUB_TOKEN, {
+      type: 'bearer'
+    })
+    .send()
+}
+
+function createBranch(branchName, fromSha) {
+  return request
     .post(
       `https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/git/refs`
     )
@@ -52,17 +93,30 @@ async function go() {
       type: 'bearer'
     })
     .send({
-      ref: 'refs/heads/notices',
-      sha: master.body.object.sha
+      ref: `refs/heads/${branchName}`,
+      sha: fromSha
     })
+}
 
-  // todo: update vs create may be different endpoints
-  // update notice file in the notices branch
-  await request
+function getFile(filePath, branchName) {
+  return request
+    .get(
+      `https://api.github.com/repos/${
+        process.env.GITHUB_REPOSITORY
+      }/contents/${filePath}`
+    )
+    .auth(process.env.GITHUB_TOKEN, {
+      type: 'bearer'
+    })
+    .query({ref: branchName})
+}
+
+function writeFile(filePath, content, branchName, currentSha) {
+  return request
     .put(
       `https://api.github.com/repos/${
         process.env.GITHUB_REPOSITORY
-      }/contents/NOTICES`
+      }/contents/${filePath}`
     )
     .auth(process.env.GITHUB_TOKEN, {
       type: 'bearer'
@@ -73,12 +127,14 @@ async function go() {
         name: 'dabutvin',
         email: 'butvinik@outlook.com'
       },
-      content: Buffer.from(output).toString('base64'),
-      branch: noticesBranchName
+      content,
+      branch: branchName,
+      sha: currentSha
     })
+}
 
-  // open PR notices -> master
-  await request
+function openPr(head, base) {
+  return request
     .post(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/pulls`)
     .auth(process.env.GITHUB_TOKEN, {
       type: 'bearer'
@@ -86,18 +142,7 @@ async function go() {
     .send({
       title: 'NOTICE file updates',
       body: 'Please pull this in!',
-      head: noticesBranchName,
-      base: 'master'
+      head,
+      base
     })
-}
-
-go()
-
-
-function getBranch(branch) {
-  return request
-    .get(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/git/refs/heads/${branch}`)
-    .auth(process.env.GITHUB_TOKEN, {
-      type: 'bearer'
-    }).send()
 }
