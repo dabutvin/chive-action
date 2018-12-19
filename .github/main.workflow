@@ -1,9 +1,8 @@
-workflow "Chive" {
+workflow "NOTICE file generate" {
   on = "push"
-  resolves = ["NPM package-lock.json"]
+  resolves = ["Chive Action"]
 }
 
-action "NPM package-lock.json" {
+action "Chive Action" {
   uses = "./"
-  args = "path"
 }

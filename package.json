@@ -1,7 +1,7 @@
 {
   "name": "chive-action",
   "version": "1.0.0",
-  "description": "",
+  "description": "Generate NOTICE files from package-lock.json",
   "main": "index.js",
   "author": "dabutvin",
   "license": "MIT",
