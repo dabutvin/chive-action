@@ -15,7 +15,7 @@ const jsonRenderer = new JsonRenderer()
 const jsonBuilder = new DocBuilder(jsonRenderer)
 const clearlyDefinedBuilder = new DocBuilder(new TextRenderer())
 
-const packageData = fs.readFileSync(path.join(__dirname, './package-lock.json'))
+const packageData = fs.readFileSync(path.join(process.env.GITHUB_WORKSPACE, 'package-lock.json'))
 
 async function go() {
   const packageLockSource = new PackageLockSource(packageData.toString())
@@ -23,9 +23,9 @@ async function go() {
   const jsonOutput = await jsonBuilder.build()
   const clearlydefinedInput = {
     coordinates: jsonOutput.packages.map(x =>
-      x.name.indexOf('/') > -1
-        ? `npm/npmjs/${x.name}/${x.version}`
-        : `npm/npmjs/-/${x.name}/${x.version}`
+      x.name.indexOf('/') > -1 ?
+      `npm/npmjs/${x.name}/${x.version}` :
+      `npm/npmjs/-/${x.name}/${x.version}`
     )
   }
   await clearlyDefinedBuilder.read(

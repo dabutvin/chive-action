@@ -10,4 +10,8 @@ LABEL "homepage"="http://github.com/dabutvin/chive-action"
 LABEL "maintainer"="dabutvin <butvinik@outlook.com>"
 
 ADD entrypoint.sh /entrypoint.sh
+ADD index.js /index.js
+ADD package-lock.json /package-lock.json
+ADD package.json /package.json
+RUN cd / && npm install
 ENTRYPOINT ["/entrypoint.sh"]
