@@ -31,7 +31,26 @@ async function go() {
   await clearlyDefinedBuilder.read(new ClearlyDefinedSource(JSON.stringify(clearlydefinedInput)))
   const output = clearlyDefinedBuilder.build()
 
-  // update notice file
+  // get a ref to the default branch
+  const master = await request
+    .get(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/git/refs/heads/master`)
+    .auth(process.env.GITHUB_TOKEN, {
+      type: 'bearer'
+    })
+    .send()
+
+  // create branch off master
+  await request
+    .post(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/git/refs`)
+    .auth(process.env.GITHUB_TOKEN, {
+      type: 'bearer'
+    })
+    .send({
+      ref: 'refs/heads/notices',
+      sha: master.body.object.sha
+    })
+
+  // update notice file in the notices branch
   await request
     .put(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/contents/NOTICES`)
     .auth(process.env.GITHUB_TOKEN, {
@@ -47,7 +66,7 @@ async function go() {
       branch: 'notices'
     })
 
-  // open PR
+  // open PR notices -> master
   await request
     .post(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/pulls`)
     .auth(process.env.GITHUB_TOKEN, {
