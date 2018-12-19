@@ -37,7 +37,7 @@ async function go() {
   // get a ref to the default branch
   const master = await getBranch('master')
   const noticeBranch = await getBranch(noticesBranchName)
-  if (noticeBranch.body.ref == `refs/heads/${noticeBranch}`) {
+  if (noticeBranch.body.ref == `refs/heads/${noticesBranchName}`) {
     // todo: see if this branch is out of date and rebase it
     console.log('branch already exists')
     return
