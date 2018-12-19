@@ -1,4 +1,4 @@
 #!/bin/sh -l
 
 sh -c "echo NPMs"
-sh -c "echo $*"
+sh -c "node index.js"
