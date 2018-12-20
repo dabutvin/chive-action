@@ -34,8 +34,11 @@ async function go() {
   await clearlyDefinedBuilder.read(
     new ClearlyDefinedSource(JSON.stringify(clearlydefinedInput))
   )
+
   const output = clearlyDefinedBuilder.build()
   const base64Output = Buffer.from(output).toString('base64')
+
+  console.log('generated notices')
 
   // get a ref to the default branch
   const master = await getBranch('master')
@@ -51,7 +54,7 @@ async function go() {
 
   // get the notice file
   const existingFile = await getFile('NOTICES', 'master')
-  if (existingFile.body.content == base64Output) {
+  if (existingFile && existingFile.body.content == base64Output) {
     console.log('No change to existing NOTICES file')
     return
   }
@@ -72,6 +75,7 @@ async function go() {
 go()
 
 function getBranch(branch) {
+  console.log('getting branch: ' + branch)
   return request
     .get(
       `https://api.github.com/repos/${
@@ -85,6 +89,7 @@ function getBranch(branch) {
 }
 
 function createBranch(branchName, fromSha) {
+  console.log('creating branch: ' + branchName + ' from ' + fromSha)
   return request
     .post(
       `https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/git/refs`
@@ -99,19 +104,25 @@ function createBranch(branchName, fromSha) {
 }
 
 function getFile(filePath, branchName) {
-  return request
-    .get(
-      `https://api.github.com/repos/${
-        process.env.GITHUB_REPOSITORY
-      }/contents/${filePath}`
-    )
-    .auth(process.env.GITHUB_TOKEN, {
-      type: 'bearer'
-    })
-    .query({ref: branchName})
+  console.log('getting file: ' + filePath + ' from ' + branchName)
+  try {
+    return request
+      .get(
+        `https://api.github.com/repos/${
+          process.env.GITHUB_REPOSITORY
+        }/contents/${filePath}`
+      )
+      .auth(process.env.GITHUB_TOKEN, {
+        type: 'bearer'
+      })
+      .query({ref: branchName})
+  } catch (e) {
+    return null
+  }
 }
 
 function writeFile(filePath, content, branchName, currentSha) {
+  console.log('writing file: ' + filePath + ' to ' + branchName)
   return request
     .put(
       `https://api.github.com/repos/${
@@ -134,6 +145,7 @@ function writeFile(filePath, content, branchName, currentSha) {
 }
 
 function openPr(head, base) {
+  console.log('opening pr from ' + head + ' to ' + base)
   return request
     .post(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/pulls`)
     .auth(process.env.GITHUB_TOKEN, {
