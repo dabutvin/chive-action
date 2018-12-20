@@ -42,6 +42,8 @@ async function go() {
 
   // get a ref to the default branch
   const master = await getBranch('master')
+
+  // get a ref to the notices branch
   const noticeBranch = await getBranch(noticesBranchName)
   if (
     noticeBranch &&
@@ -52,10 +54,7 @@ async function go() {
     return
   }
 
-  // create branch off master
-  await createBranch(noticesBranchName, master.body.object.sha)
-
-  // get the notice file
+  // get the existing notice file in the default branch
   let existingFileSha = null
   const existingFile = await getFile('NOTICES', 'master')
   if (existingFile) {
@@ -68,7 +67,10 @@ async function go() {
     }
   }
 
-  // todo: update vs create may be different endpoints
+  // create a new notices branch off the default branch
+  await createBranch(noticesBranchName, master.body.object.sha)
+
+
   // update notice file in the notices branch
   await writeFile('NOTICES', base64Output, noticesBranchName, existingFileSha)
 
