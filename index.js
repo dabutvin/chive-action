@@ -56,20 +56,19 @@ async function go() {
   await createBranch(noticesBranchName, master.body.object.sha)
 
   // get the notice file
+  let existingFileSha = null
   const existingFile = await getFile('NOTICES', 'master')
-  if (existingFile && existingFile.body.content == base64Output) {
-    console.log('No change to existing NOTICES file')
-    return
+  if (existingFile) {
+    existingFileSha = existingFile.body.sha
+    if (existingFile.body.content == base64Output) {
+      console.log('No change to existing NOTICES file')
+      return
+    }
   }
 
   // todo: update vs create may be different endpoints
   // update notice file in the notices branch
-  await writeFile(
-    'NOTICES',
-    base64Output,
-    noticesBranchName,
-    existingFile.body.sha
-  )
+  await writeFile('NOTICES', base64Output, noticesBranchName, existingFileSha)
 
   // open PR notices -> master
   await openPr(noticesBranchName, 'master')
@@ -132,6 +131,18 @@ async function getFile(filePath, branchName) {
 
 function writeFile(filePath, content, branchName, currentSha) {
   console.log('writing file: ' + filePath + ' to ' + branchName)
+  const payload = {
+    message: 'update NOTICES',
+    committer: {
+      name: 'dabutvin',
+      email: 'butvinik@outlook.com'
+    },
+    content,
+    branch: branchName
+  }
+  if (currentSha) {
+    payload.sha = currentSha
+  }
   return request
     .put(
       `https://api.github.com/repos/${
@@ -141,16 +152,7 @@ function writeFile(filePath, content, branchName, currentSha) {
     .auth(process.env.GITHUB_TOKEN, {
       type: 'bearer'
     })
-    .send({
-      message: 'update NOTICES',
-      committer: {
-        name: 'dabutvin',
-        email: 'butvinik@outlook.com'
-      },
-      content,
-      branch: branchName,
-      sha: currentSha
-    })
+    .send(payload)
 }
 
 function openPr(head, base) {
