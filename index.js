@@ -61,6 +61,7 @@ async function go() {
   if (existingFile) {
     existingFileSha = existingFile.body.sha
     if (existingFile.body.content == base64Output) {
+      // todo squash out the whitespace
       console.log('No change to existing NOTICES file')
       return
     }
