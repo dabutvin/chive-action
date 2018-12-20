@@ -77,10 +77,10 @@ async function go() {
 
 go()
 
-function getBranch(branch) {
+async function getBranch(branch) {
   console.log('getting branch: ' + branch)
   try {
-    return request
+    const response = await request
       .get(
         `https://api.github.com/repos/${
           process.env.GITHUB_REPOSITORY
@@ -90,6 +90,7 @@ function getBranch(branch) {
         type: 'bearer'
       })
       .send()
+    return response
   } catch (e) {
     return null
   }
@@ -110,10 +111,10 @@ function createBranch(branchName, fromSha) {
     })
 }
 
-function getFile(filePath, branchName) {
+async function getFile(filePath, branchName) {
   console.log('getting file: ' + filePath + ' from ' + branchName)
   try {
-    return request
+    const response = await request
       .get(
         `https://api.github.com/repos/${
           process.env.GITHUB_REPOSITORY
@@ -123,6 +124,7 @@ function getFile(filePath, branchName) {
         type: 'bearer'
       })
       .query({ref: branchName})
+    return response
   } catch (e) {
     return null
   }
