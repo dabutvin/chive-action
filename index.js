@@ -43,7 +43,10 @@ async function go() {
   // get a ref to the default branch
   const master = await getBranch('master')
   const noticeBranch = await getBranch(noticesBranchName)
-  if (noticeBranch.body.ref == `refs/heads/${noticesBranchName}`) {
+  if (
+    noticeBranch &&
+    noticeBranch.body.ref == `refs/heads/${noticesBranchName}`
+  ) {
     // todo: see if this branch is out of date and rebase it instead of quitting
     console.log('branch already exists')
     return
@@ -76,16 +79,20 @@ go()
 
 function getBranch(branch) {
   console.log('getting branch: ' + branch)
-  return request
-    .get(
-      `https://api.github.com/repos/${
-        process.env.GITHUB_REPOSITORY
-      }/git/refs/heads/${branch}`
-    )
-    .auth(process.env.GITHUB_TOKEN, {
-      type: 'bearer'
-    })
-    .send()
+  try {
+    return request
+      .get(
+        `https://api.github.com/repos/${
+          process.env.GITHUB_REPOSITORY
+        }/git/refs/heads/${branch}`
+      )
+      .auth(process.env.GITHUB_TOKEN, {
+        type: 'bearer'
+      })
+      .send()
+  } catch (e) {
+    return null
+  }
 }
 
 function createBranch(branchName, fromSha) {
