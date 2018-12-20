@@ -26,9 +26,9 @@ async function go() {
   const jsonOutput = await jsonBuilder.build()
   const clearlydefinedInput = {
     coordinates: jsonOutput.packages.map(x =>
-      x.name.indexOf('/') > -1
-        ? `npm/npmjs/${x.name}/${x.version}`
-        : `npm/npmjs/-/${x.name}/${x.version}`
+      x.name.indexOf('/') > -1 ?
+      `npm/npmjs/${x.name}/${x.version}` :
+      `npm/npmjs/-/${x.name}/${x.version}`
     )
   }
   await clearlyDefinedBuilder.read(
@@ -60,8 +60,9 @@ async function go() {
   const existingFile = await getFile('NOTICES', 'master')
   if (existingFile) {
     existingFileSha = existingFile.body.sha
-    if (existingFile.body.content == base64Output) {
-      // todo squash out the whitespace
+    const normalizedExistingFile = Buffer.from(existingFile.body.content, 'base64').toString().replace(/\s/g, '')
+    const normalizedOutput = output.toString().replace(/\s/g, '')
+    if (normalizedExistingFile == normalizedOutput) {
       console.log('No change to existing NOTICES file')
       return
     }
@@ -123,7 +124,9 @@ async function getFile(filePath, branchName) {
       .auth(process.env.GITHUB_TOKEN, {
         type: 'bearer'
       })
-      .query({ref: branchName})
+      .query({
+        ref: branchName
+      })
     return response
   } catch (e) {
     return null
