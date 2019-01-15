@@ -7,6 +7,6 @@
   "license": "MIT",
   "dependencies": {
     "superagent": "^4.0.0",
-    "tiny-attribution-generator": "0.0.4"
+    "tiny-attribution-generator": "0.0.5"
   }
 }
