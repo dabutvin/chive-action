@@ -13,6 +13,7 @@ const PackageLockSource = require('tiny-attribution-generator/lib/inputs/package
   .default
 const request = require('superagent')
 
+const noticesFileName = 'NOTICE'
 const noticesBranchName = 'notices'
 const packageData = fs.readFileSync(
   path.join(process.env.GITHUB_WORKSPACE, 'package-lock.json')
@@ -62,7 +63,7 @@ async function go() {
 
   // get the existing notice file in the default branch
   let existingFileSha = null
-  const existingFile = await getFile('NOTICES', 'master')
+  const existingFile = await getFile(noticesFileName, 'master')
   if (existingFile) {
     existingFileSha = existingFile.body.sha
     const normalizedExistingFile = Buffer.from(
@@ -73,7 +74,7 @@ async function go() {
       .replace(/\s/g, '')
     const normalizedOutput = output.toString().replace(/\s/g, '')
     if (normalizedExistingFile == normalizedOutput) {
-      console.log('No change to existing NOTICES file')
+      console.log(`No change to existing ${noticesFileName} file`)
       return
     }
   }
@@ -82,7 +83,12 @@ async function go() {
   await createBranch(noticesBranchName, master.body.object.sha)
 
   // update notice file in the notices branch
-  await writeFile('NOTICES', base64Output, noticesBranchName, existingFileSha)
+  await writeFile(
+    noticesFileName,
+    base64Output,
+    noticesBranchName,
+    existingFileSha
+  )
 
   // open PR notices -> master
   await openPr(noticesBranchName, 'master')
@@ -148,7 +154,7 @@ async function getFile(filePath, branchName) {
 function writeFile(filePath, content, branchName, currentSha) {
   console.log('writing file: ' + filePath + ' to ' + branchName)
   const payload = {
-    message: 'update NOTICES',
+    message: `update ${noticesFileName}`,
     committer: {
       name: 'dabutvin',
       email: 'butvinik@outlook.com'
@@ -179,7 +185,7 @@ function openPr(head, base) {
       type: 'bearer'
     })
     .send({
-      title: 'NOTICE file updates',
+      title: `${noticesFileName} file updates`,
       body: 'Please pull this in!',
       head,
       base
