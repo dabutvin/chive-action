@@ -198,6 +198,6 @@ function findCustomTemplate() {
     path.join(process.env.GITHUB_WORKSPACE, '.github/NOTICE_TEMPLATE')
   ]
   for (let location of locations) {
-    if (fs.existsSync(location)) return fs.readFileSync(location)
+    if (fs.existsSync(location)) return fs.readFileSync(location).toString()
   }
 }
