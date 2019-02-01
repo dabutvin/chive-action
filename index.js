@@ -3,6 +3,8 @@ const path = require('path')
 const DocBuilder = require('tiny-attribution-generator/lib/docbuilder').default
 const TextRenderer = require('tiny-attribution-generator/lib/outputs/text')
   .default
+const TemplateRenderer = require('tiny-attribution-generator/lib/outputs/template')
+  .default
 const ClearlyDefinedSource = require('tiny-attribution-generator/lib/inputs/clearlydefined')
   .default
 const JsonRenderer = require('tiny-attribution-generator/lib/outputs/json')
@@ -11,14 +13,18 @@ const PackageLockSource = require('tiny-attribution-generator/lib/inputs/package
   .default
 const request = require('superagent')
 
-const jsonRenderer = new JsonRenderer()
-const jsonBuilder = new DocBuilder(jsonRenderer)
-const clearlyDefinedBuilder = new DocBuilder(new TextRenderer())
-
 const noticesBranchName = 'notices'
 const packageData = fs.readFileSync(
   path.join(process.env.GITHUB_WORKSPACE, 'package-lock.json')
 )
+const customTemplate = findCustomTemplate()
+
+const jsonRenderer = new JsonRenderer()
+const jsonBuilder = new DocBuilder(jsonRenderer)
+const outputRenderer = customTemplate
+  ? new TemplateRenderer(customTemplate)
+  : new TextRenderer()
+const clearlyDefinedBuilder = new DocBuilder(outputRenderer)
 
 async function go() {
   const packageLockSource = new PackageLockSource(packageData.toString())
@@ -26,9 +32,9 @@ async function go() {
   const jsonOutput = await jsonBuilder.build()
   const clearlydefinedInput = {
     coordinates: jsonOutput.packages.map(x =>
-      x.name.indexOf('/') > -1 ?
-      `npm/npmjs/${x.name}/${x.version}` :
-      `npm/npmjs/-/${x.name}/${x.version}`
+      x.name.indexOf('/') > -1
+        ? `npm/npmjs/${x.name}/${x.version}`
+        : `npm/npmjs/-/${x.name}/${x.version}`
     )
   }
   await clearlyDefinedBuilder.read(
@@ -59,7 +65,12 @@ async function go() {
   const existingFile = await getFile('NOTICES', 'master')
   if (existingFile) {
     existingFileSha = existingFile.body.sha
-    const normalizedExistingFile = Buffer.from(existingFile.body.content, 'base64').toString().replace(/\s/g, '')
+    const normalizedExistingFile = Buffer.from(
+      existingFile.body.content,
+      'base64'
+    )
+      .toString()
+      .replace(/\s/g, '')
     const normalizedOutput = output.toString().replace(/\s/g, '')
     if (normalizedExistingFile == normalizedOutput) {
       console.log('No change to existing NOTICES file')
@@ -69,7 +80,6 @@ async function go() {
 
   // create a new notices branch off the default branch
   await createBranch(noticesBranchName, master.body.object.sha)
-
 
   // update notice file in the notices branch
   await writeFile('NOTICES', base64Output, noticesBranchName, existingFileSha)
@@ -174,4 +184,14 @@ function openPr(head, base) {
       head,
       base
     })
+}
+
+function findCustomTemplate() {
+  const locations = [
+    path.join(process.env.GITHUB_WORKSPACE, 'NOTICE_TEMPLATE'),
+    path.join(process.env.GITHUB_WORKSPACE, '.github/NOTICE_TEMPLATE')
+  ]
+  for (let location of locations) {
+    if (fs.existsSync(location)) return fs.readFileSync(location)
+  }
 }
