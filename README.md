@@ -4,8 +4,8 @@ Create a NOTICE attribution file based on your package-lock.json as a github act
 
 - uses https://www.npmjs.com/package/tiny-attribution-generator and https://clearlydefined.io to generate
 - devDependencies filtered out (todo: add argument to bring them in)
-- optional argument (--filename) for path to template to use for generation
-- optional argument for filename to use
+- optional custom NOTICE_TEMPLATE
+- optional argument for filename to use (--filename)
 
 add ./github/main.workflow to your repo
 
