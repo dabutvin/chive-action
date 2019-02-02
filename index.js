@@ -24,29 +24,26 @@ const customTemplate = findCustomTemplate()
 
 const jsonRenderer = new JsonRenderer()
 const jsonBuilder = new DocBuilder(jsonRenderer)
-const outputRenderer = customTemplate
-  ? new TemplateRenderer(customTemplate)
-  : new TextRenderer()
+const outputRenderer = customTemplate ?
+  new TemplateRenderer(customTemplate) :
+  new TextRenderer()
 const clearlyDefinedBuilder = new DocBuilder(outputRenderer)
 
 async function go() {
   const packageLockSource = new PackageLockSource(packageData.toString(), !includeDev)
   await jsonBuilder.read(packageLockSource)
   const jsonOutput = await jsonBuilder.build()
-  const clearlydefinedInput = {
-    coordinates: jsonOutput.packages.map(x =>
-      x.name.indexOf('/') > -1
-        ? `npm/npmjs/${x.name}/${x.version}`
-        : `npm/npmjs/-/${x.name}/${x.version}`
-    )
-  }
-  await clearlyDefinedBuilder.read(
-    new ClearlyDefinedSource(JSON.stringify(clearlydefinedInput))
+  const coordinates = jsonOutput.packages.map(x =>
+    x.name.indexOf('/') > -1 ?
+    `npm/npmjs/${x.name}/${x.version}` :
+    `npm/npmjs/-/${x.name}/${x.version}`
   )
-
+  const clearlydefinedSource = new ClearlyDefinedSource(JSON.stringify({
+    coordinates
+  }))
+  await clearlyDefinedBuilder.read(clearlydefinedSource)
   const output = clearlyDefinedBuilder.build()
   const base64Output = Buffer.from(output).toString('base64')
-
   console.log('generated notices')
 
   // get a ref to the default branch
@@ -69,9 +66,9 @@ async function go() {
   if (existingFile) {
     existingFileSha = existingFile.body.sha
     const normalizedExistingFile = Buffer.from(
-      existingFile.body.content,
-      'base64'
-    )
+        existingFile.body.content,
+        'base64'
+      )
       .toString()
       .replace(/\s/g, '')
     const normalizedOutput = output.toString().replace(/\s/g, '')
@@ -93,7 +90,7 @@ async function go() {
   )
 
   // open PR notices -> master
-  await openPr(noticesBranchName, 'master')
+  await openPr(noticesBranchName, 'master', getPrBody(coordinates, clearlydefinedSource))
 }
 
 go()
@@ -179,7 +176,7 @@ function writeFile(filePath, content, branchName, currentSha) {
     .send(payload)
 }
 
-function openPr(head, base) {
+function openPr(head, base, body) {
   console.log('opening pr from ' + head + ' to ' + base)
   return request
     .post(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/pulls`)
@@ -188,7 +185,7 @@ function openPr(head, base) {
     })
     .send({
       title: `${noticesFileName} file updates`,
-      body: 'Please pull this in!',
+      body,
       head,
       base
     })
@@ -201,5 +198,33 @@ function findCustomTemplate() {
   ]
   for (let location of locations) {
     if (fs.existsSync(location)) return fs.readFileSync(location).toString()
+  }
+}
+
+function getPrBody(coordinates, clearlydefinedSource) {
+  let licenseAvailable = 0
+  let rows = coordinates.map(x => {
+    let pkg = clearlydefinedSource.getPackage(x) || {
+      license: '',
+      website: ''
+    }
+    if (pkg.license) licenseAvailable++
+    return `| ${x} | ${pkg.license} | ${pkg.website} | ${yesno(pkg.copyrights && pkg.copyrights.length)} | ${yesno(pkg.text)} |\n`
+  }).sort((a, b) => b.license ? 1 : -1)
+  let result = '## Beep boop. Your notices are updated!\n\n'
+  result += `We found license information for  ${licenseAvailable} of ${coordinates.length} total components ${licenseAvailable > 0 ? '🎉' : ''}\n\n`
+  result += '<details>\n<summary>\nDetails\n</summary>\n\n'
+  result += '| Package | License | Website | Copyrights available | License text available |\n'
+  result += '|--|--|--|--|--|\n'
+  rows.forEach(x => {
+    result += x
+  })
+  result += '</details>\n\n'
+  result += '---\n\n'
+  result += '[:octocat: source](https://github.com/dabutvin/chive-action) | [🏷SPDX licenses](https://spdx.org/licenses/)] | [📘Best practices](https://www.nexb.com/blog/oss_attribution_obligations.html) | [🏪ClearlyDefined](https://clearlydefined.io)'
+  return result
+
+  function yesno(input) {
+    return input ? '☑️' : '❌'
   }
 }
