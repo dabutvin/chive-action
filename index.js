@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const argv = require('yargs').argv
 const DocBuilder = require('tiny-attribution-generator/lib/docbuilder').default
 const TextRenderer = require('tiny-attribution-generator/lib/outputs/text')
   .default
@@ -13,7 +14,7 @@ const PackageLockSource = require('tiny-attribution-generator/lib/inputs/package
   .default
 const request = require('superagent')
 
-const noticesFileName = 'NOTICE'
+const noticesFileName = argv.filename || 'NOTICE'
 const noticesBranchName = 'notices'
 const packageData = fs.readFileSync(
   path.join(process.env.GITHUB_WORKSPACE, 'package-lock.json')
