@@ -15,6 +15,7 @@ const PackageLockSource = require('tiny-attribution-generator/lib/inputs/package
 const request = require('superagent')
 
 const noticesFileName = argv.filename || 'NOTICE'
+const includeDev = argv.includeDev || false
 const noticesBranchName = 'notices'
 const packageData = fs.readFileSync(
   path.join(process.env.GITHUB_WORKSPACE, 'package-lock.json')
@@ -29,7 +30,7 @@ const outputRenderer = customTemplate
 const clearlyDefinedBuilder = new DocBuilder(outputRenderer)
 
 async function go() {
-  const packageLockSource = new PackageLockSource(packageData.toString())
+  const packageLockSource = new PackageLockSource(packageData.toString(), !includeDev)
   await jsonBuilder.read(packageLockSource)
   const jsonOutput = await jsonBuilder.build()
   const clearlydefinedInput = {
