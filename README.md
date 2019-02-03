@@ -1,8 +1,8 @@
-# NOTICE file generator (chvive-action)
+# NOTICE file generator (chive-action)
 
 Create a NOTICE attribution file based on your package-lock.json as a github action!
 
-- uses https://www.npmjs.com/package/tiny-attribution-generator (chive) and https://clearlydefined.io to generate
+- uses https://www.npmjs.com/package/tiny-attribution-generator (chive) and https://clearlydefined.io
 - optional custom NOTICE_TEMPLATE
 - optional argument for filename to use (--filename)
 - optional argument for including devDependencies (--includeDev) (excluded by default)
@@ -21,7 +21,7 @@ action "NOTICE file generator" {
 }
 ```
 
-with custom file name
+with custom file name argument
 
 ```
 action "NOTICE file generator" {
