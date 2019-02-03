@@ -155,8 +155,8 @@ function writeFile(filePath, content, branchName, currentSha) {
   const payload = {
     message: `update ${noticesFileName}`,
     committer: {
-      name: 'dabutvin',
-      email: 'butvinik@outlook.com'
+      name: 'chive-action',
+      email: 'chive.action@gmail.com'
     },
     content,
     branch: branchName
@@ -211,7 +211,7 @@ function getPrBody(coordinates, clearlydefinedSource) {
     if (pkg.license) licenseAvailable++
     return `| ${x} | ${pkg.license} | ${pkg.website} | ${yesno(pkg.copyrights && pkg.copyrights.length)} | ${yesno(pkg.text)} |\n`
   }).sort((a, b) => b.license ? 1 : -1)
-  let result = '## Beep boop. Your notices are updated!\n\n'
+  let result = '## Holy chives! Your notices are updated!\n\n'
   result += `We found license information for  ${licenseAvailable} of ${coordinates.length} total components ${licenseAvailable > 0 ? '🎉' : ''}\n\n`
   result += '<details>\n<summary>\nDetails\n</summary>\n\n'
   result += '| Package | License | Website | Copyrights available | License text available |\n'
