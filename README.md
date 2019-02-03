@@ -40,3 +40,35 @@ action "NOTICE file generator" {
   args = "--includeDev=true"
 }
 ```
+
+This is an example of a custom template you could use. It uses a handlebars template.
+
+```
+SOFTWARE NOTICES AND INFORMATION
+Do Not Translate or Localize
+
+This software incorporates material from third parties.
+Notwithstanding any other terms, you may reverse engineer this software to the extent
+required to debug changes to any libraries licensed under the GNU Lesser General Public License.
+
+{{#buckets}}
+{{#packages}}
+
+-------------------------------------------------------------------
+
+{{{name}}} {{{version}}} - {{{../name}}}
+{{#if website}}
+{{{website}}}
+{{/if}}
+{{#if copyrights}}
+{{#copyrights}}
+{{{this}}}
+{{/copyrights}}
+{{/if}}
+
+{{{../text}}}
+
+-------------------------------------------------------------------
+{{/packages}}
+{{/buckets}}
+```
