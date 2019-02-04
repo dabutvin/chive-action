@@ -2173,9 +2173,9 @@ THE SOFTWARE.
 
 -------------------------------------------------------------------
 
-is-fullwidth-code-point 2.0.0 - MIT
-https://github.com/sindresorhus/is-fullwidth-code-point#readme
-(c) Sindre Sorhus (https://sindresorhus.com)
+is-fullwidth-code-point 1.0.0 - MIT
+https://github.com/sindresorhus/is-fullwidth-code-point
+(c) Sindre Sorhus (http://sindresorhus.com)
 Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)
 
 The MIT License (MIT)
@@ -2205,9 +2205,9 @@ THE SOFTWARE.
 
 -------------------------------------------------------------------
 
-is-fullwidth-code-point 1.0.0 - MIT
-https://github.com/sindresorhus/is-fullwidth-code-point
-(c) Sindre Sorhus (http://sindresorhus.com)
+is-fullwidth-code-point 2.0.0 - MIT
+https://github.com/sindresorhus/is-fullwidth-code-point#readme
+(c) Sindre Sorhus (https://sindresorhus.com)
 Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)
 
 The MIT License (MIT)
