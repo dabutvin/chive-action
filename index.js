@@ -40,6 +40,10 @@ async function go() {
     `npm/npmjs/${x.name}/${x.version}` :
     `npm/npmjs/-/${x.name}/${x.version}`
   )
+  if (!coordinates.length) {
+    console.log('no components detected')
+    return
+  }
   const clearlydefinedSource = new ClearlyDefinedSource(JSON.stringify({
     coordinates
   }))
