@@ -14,6 +14,8 @@ const PackageLockSource = require('tiny-attribution-generator/lib/inputs/package
   .default
 const request = require('superagent')
 
+if (!process.env.GITHUB_TOKEN) throw new Error('GITHUB_TOKEN is required!')
+
 const noticesFileName = argv.filename || 'NOTICE'
 const includeDev = argv.includeDev || false
 const noticesBranchName = 'notices'
