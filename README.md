@@ -1,21 +1,33 @@
-# NOTICE file generator (chive-action)
+# ClearlyNoticed Action - OSS atrribution file generator
 
-Create a NOTICE attribution file based on your package-lock.json as a github action!
+Maintain a NOTICE file based on your package-lock.json using GitHub Actions!
 
-- uses https://www.npmjs.com/package/tiny-attribution-generator (chive) and https://clearlydefined.io
-- optional custom NOTICE_TEMPLATE
-- optional argument for filename to use (--filename)
-- optional argument for including devDependencies (--includeDev) (excluded by default)
+![](https://clearlydefined.io/static/media/logo-text-stacked.d14f6270.svg)
+
+Uses https://www.npmjs.com/package/tiny-attribution-generator (chive) for rendering and https://clearlydefined.io for data
+
+### Options
+
+- custom NOTICE_TEMPLATE you check in to the root or .github folder
+- argument for filename to use (--filename). Defaults to NOTICE
+- argument for including devDependencies (--includeDev). Defaults to excluded
+
+### How it works
+
+1. Include this Action in your workflow
+2. When the Action runs, a pull request will be created with your new NOTICE file
+3. Merge the pull request and delete the branch
+4. As your dependencies evolve, new pull requests get opened with the changes
 
 add ./github/main.workflow to your repo
 
 ```
-workflow "NOTICE file generator" {
+workflow "My Workflow" {
   on = "push"
-  resolves = ["NOTICE file generator"]
+  resolves = ["ClearlyNoticed"]
 }
 
-action "NOTICE file generator" {
+action "ClearlyNoticed" {
   uses = "dabutvin/chive-action@master"
   secrets = ["GITHUB_TOKEN"]
 }
@@ -24,7 +36,7 @@ action "NOTICE file generator" {
 with custom file name argument
 
 ```
-action "NOTICE file generator" {
+action "ClearlyNoticed" {
   uses = "dabutvin/chive-action@master"
   secrets = ["GITHUB_TOKEN"]
   args = "--filename=MyNotices.md"
@@ -34,7 +46,7 @@ action "NOTICE file generator" {
 include devDependencies in notices
 
 ```
-action "NOTICE file generator" {
+action "ClearlyNoticed" {
   uses = "dabutvin/chive-action@master"
   secrets = ["GITHUB_TOKEN"]
   args = "--includeDev=true"

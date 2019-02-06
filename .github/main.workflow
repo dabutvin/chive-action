@@ -1,9 +1,9 @@
 workflow "NOTICE file generate" {
   on = "push"
-  resolves = ["Chive Action"]
+  resolves = ["ClearlyNoticed"]
 }
 
-action "Chive Action" {
+action "ClearlyNoticed" {
   uses = "./"
   secrets = ["GITHUB_TOKEN"]
 }

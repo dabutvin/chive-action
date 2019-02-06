@@ -170,8 +170,8 @@ function writeFile(filePath, content, branchName, currentSha) {
   const payload = {
     message: `update ${noticesFileName}`,
     committer: {
-      name: 'chive-action',
-      email: 'chive.action@gmail.com'
+      name: 'clearlydefinedbot',
+      email: '34585460+clearlydefinedbot@users.noreply.github.com'
     },
     content,
     branch: branchName
