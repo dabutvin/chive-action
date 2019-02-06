@@ -26,27 +26,32 @@ const customTemplate = findCustomTemplate()
 
 const jsonRenderer = new JsonRenderer()
 const jsonBuilder = new DocBuilder(jsonRenderer)
-const outputRenderer = customTemplate ?
-  new TemplateRenderer(customTemplate) :
-  new TextRenderer()
+const outputRenderer = customTemplate
+  ? new TemplateRenderer(customTemplate)
+  : new TextRenderer()
 const clearlyDefinedBuilder = new DocBuilder(outputRenderer)
 
 async function go() {
-  const packageLockSource = new PackageLockSource(packageData.toString(), !includeDev)
+  const packageLockSource = new PackageLockSource(
+    packageData.toString(),
+    !includeDev
+  )
   await jsonBuilder.read(packageLockSource)
   const jsonOutput = await jsonBuilder.build()
   const coordinates = jsonOutput.packages.map(x =>
-    x.name.indexOf('/') > -1 ?
-    `npm/npmjs/${x.name}/${x.version}` :
-    `npm/npmjs/-/${x.name}/${x.version}`
+    x.name.indexOf('/') > -1
+      ? `npm/npmjs/${x.name}/${x.version}`
+      : `npm/npmjs/-/${x.name}/${x.version}`
   )
   if (!coordinates.length) {
     console.log('no components detected')
     return
   }
-  const clearlydefinedSource = new ClearlyDefinedSource(JSON.stringify({
-    coordinates
-  }))
+  const clearlydefinedSource = new ClearlyDefinedSource(
+    JSON.stringify({
+      coordinates
+    })
+  )
   await clearlyDefinedBuilder.read(clearlydefinedSource)
   const output = clearlyDefinedBuilder.build()
   const base64Output = Buffer.from(output).toString('base64')
@@ -72,9 +77,9 @@ async function go() {
   if (existingFile) {
     existingFileSha = existingFile.body.sha
     const normalizedExistingFile = Buffer.from(
-        existingFile.body.content,
-        'base64'
-      )
+      existingFile.body.content,
+      'base64'
+    )
       .toString()
       .replace(/\s/g, '')
     const normalizedOutput = output.toString().replace(/\s/g, '')
@@ -96,7 +101,11 @@ async function go() {
   )
 
   // open PR notices -> master
-  await openPr(noticesBranchName, 'master', getPrBody(coordinates, clearlydefinedSource))
+  await openPr(
+    noticesBranchName,
+    'master',
+    getPrBody(coordinates, clearlydefinedSource)
+  )
 }
 
 go()
@@ -209,25 +218,40 @@ function findCustomTemplate() {
 
 function getPrBody(coordinates, clearlydefinedSource) {
   let licenseAvailable = 0
-  let rows = coordinates.map(x => {
-    let pkg = clearlydefinedSource.getPackage(x) || {
-      license: '',
-      website: ''
-    }
-    if (pkg.license) licenseAvailable++
-    return `| ${x} | ${pkg.license} | ${pkg.website} | ${yesno(pkg.copyrights && pkg.copyrights.length)} | ${yesno(pkg.text)} |\n`
-  }).sort((a, b) => b.license ? 1 : -1)
+  let rows = coordinates
+    .map(x => {
+      let pkg = clearlydefinedSource.getPackage(x) || {
+        license: '',
+        website: ''
+      }
+      if (pkg.license) licenseAvailable++
+      return `| ${x} | ${pkg.license} | ${pkg.website} | ${yesno(
+        pkg.copyrights && pkg.copyrights.length
+      )} | ${yesno(pkg.text)} |\n`
+    })
+    .sort((a, b) => (b.license ? 1 : -1))
   let result = '## Holy chives! Your notices are updated!\n\n'
-  result += `We found license information for  ${licenseAvailable} of ${coordinates.length} total components ${licenseAvailable > 0 ? '🎉' : ''}\n\n`
+  result += `We found license information for  ${licenseAvailable} of ${
+    coordinates.length
+  } total components ${licenseAvailable > 0 ? '🎉' : ''}\n\n`
+
+  if (rows.length > 400) {
+    result +=
+      'The following report has been truncated to fit within the pull request body\n\n'
+    rows = rows.slice(0, 400)
+  }
+
   result += '<details>\n<summary>\nDetails\n</summary>\n\n'
-  result += '| Package | License | Website | Copyrights available | License text available |\n'
+  result +=
+    '| Package | License | Website | Copyrights available | License text available |\n'
   result += '|--|--|--|--|--|\n'
   rows.forEach(x => {
     result += x
   })
   result += '</details>\n\n'
   result += '---\n\n'
-  result += '[:octocat: source](https://github.com/dabutvin/chive-action) | [🏷SPDX licenses](https://spdx.org/licenses/)] | [📘Best practices](https://www.nexb.com/blog/oss_attribution_obligations.html) | [🏪ClearlyDefined](https://clearlydefined.io)'
+  result +=
+    '[:octocat: source](https://github.com/dabutvin/chive-action) | [🏷SPDX licenses](https://spdx.org/licenses/)] | [📘Best practices](https://www.nexb.com/blog/oss_attribution_obligations.html) | [🏪ClearlyDefined](https://clearlydefined.io)'
   return result
 
   function yesno(input) {
