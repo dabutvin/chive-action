@@ -1,7 +1,7 @@
 FROM node:10-alpine
 
-LABEL "com.github.actions.name"="NOTICE file generator"
-LABEL "com.github.actions.description"="Generate a NOTICE file from your package-lock.json"
+LABEL "com.github.actions.name"="ClearlyNoticed Action"
+LABEL "com.github.actions.description"="Maintain a NOTICE file based on your package-lock.json"
 LABEL "com.github.actions.icon"="droplet"
 LABEL "com.github.actions.color"="green"
 
