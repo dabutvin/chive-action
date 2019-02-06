@@ -251,7 +251,7 @@ function getPrBody(coordinates, clearlydefinedSource) {
   result += '</details>\n\n'
   result += '---\n\n'
   result +=
-    'Brought to you by [ClearlyDefined](https://clearlydefined.io) and [tiny-attribution-builder](https://github.com/amzn/tiny-attribution-builder).\n\n'
+    'Brought to you by [ClearlyDefined](https://clearlydefined.io) and [tiny-attribution-builder](https://github.com/amzn/tiny-attribution-generator).\n\n'
   result +=
     '[:octocat: source](https://github.com/dabutvin/chive-action) | [🏷SPDX licenses](https://spdx.org/licenses/)] | [📘Best practices](https://www.nexb.com/blog/oss_attribution_obligations.html) | [ 👌Actions](https://github.com/features/actions)'
   return result
