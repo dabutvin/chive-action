@@ -8,6 +8,6 @@
   "dependencies": {
     "superagent": "^4.0.0",
     "tiny-attribution-generator": "0.0.6",
-    "yargs": "^12.0.5"
+    "yargs": "^16.2.0"
   }
 }
